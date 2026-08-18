@@ -5,10 +5,11 @@ set -e
 # idempotent, so it is safe on every container start, including redeploys
 # against an existing volume.
 #
-# The CLI is invoked by path rather than through `npx` so it never attempts a
-# network fetch as the unprivileged runtime user.
+# Uses scripts/migrate.cjs rather than the Prisma CLI: the CLI needs ~170MB of
+# extra dependencies (Studio, pglite, effect) that a runtime image should not
+# carry. The script writes the same _prisma_migrations table.
 echo "==> Applying database migrations..."
-node ./node_modules/prisma/build/index.js migrate deploy
+node ./scripts/migrate.cjs
 
 echo "==> Starting Next.js..."
 exec "$@"

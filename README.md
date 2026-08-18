@@ -40,7 +40,8 @@ Open http://localhost:3000.
 | `bun run dev`         | Start the dev server                        |
 | `bun run build`       | Generate the Prisma client, then build      |
 | `bun run db:migrate`  | Create and apply a migration (development)  |
-| `bun run db:deploy`   | Apply pending migrations (production)       |
+| `bun run db:deploy`   | Apply pending migrations via the Prisma CLI |
+| `bun run db:migrate:run` | Apply migrations without the CLI (used in Docker) |
 | `bun run db:studio`   | Browse the data in Prisma Studio            |
 
 ## Data model
@@ -57,6 +58,12 @@ docker compose up --build
 
 The container applies migrations on every start via `docker-entrypoint.sh`, so
 a fresh volume initialises itself and redeploys stay in sync.
+
+Migrations in the container are applied by `scripts/migrate.cjs` rather than the
+Prisma CLI. The CLI pulls in Studio, pglite and `effect` (~170MB) that a running
+container never uses, so it is left out of the runtime image. The script reads
+the same `prisma/migrations` directory and writes the same `_prisma_migrations`
+table, so `prisma migrate status` and local `prisma migrate dev` stay in sync.
 
 ## Deploying on Coolify
 

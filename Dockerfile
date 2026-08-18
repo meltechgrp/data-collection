@@ -52,15 +52,11 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
 # The standalone trace already includes the Prisma runtime client and the
-# compiled better-sqlite3 binding. Only the migration toolchain is missing:
-# the CLI, its engines, and the schema/config it reads.
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder /app/node_modules/@prisma/engines ./node_modules/@prisma/engines
-COPY --from=builder /app/node_modules/@prisma/config ./node_modules/@prisma/config
-COPY --from=builder /app/node_modules/dotenv ./node_modules/dotenv
+# compiled better-sqlite3 binding, so only the migration SQL and the small
+# script that applies it are needed here. The Prisma CLI is deliberately not
+# copied: it drags in Studio, pglite and effect (~170MB) that never run.
+COPY --from=builder /app/prisma/migrations ./prisma/migrations
+COPY --from=builder /app/scripts ./scripts
 
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
